@@ -81,8 +81,8 @@
             <td>
               {{ data.region }}
             </td>
-            <td>{{ data.updated_at | date("datetime") }}</td>
             <td>{{ data.updatedate | date("datetime") }}</td>
+            <td>{{ data.updated_at | date("datetime") }}</td>
             <td>{{ data.size }}</td>
           </tr>
         </tbody>

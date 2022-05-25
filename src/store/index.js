@@ -7,7 +7,7 @@ import tabControls from '@/store/modules/tab-controls'
 
 Vue.use(Vuex)
 
-export const DEFAULT_CODE = 222
+export const DEFAULT_CODE = 'A10931'
 
 export default new Vuex.Store({
   state: {
