@@ -9,7 +9,7 @@ export default {
   },
   actions: {
     async fetchLicenses({ commit, rootState }) {
-      return fetch(` https://update.wizardsoft.ru/api/serial/${rootState.code}/product/1/product_versions/`)
+      return fetch(` https://update.wizardsoft.ru/api/serial/${rootState.code}/products`)
         .then(response => response.status === 200 ? response.json() : Promise.reject())
         .then(licenses => commit("setLicense", licenses))
         .catch(reason => commit("setErrorGlobal", reason || true, {root: true}))
