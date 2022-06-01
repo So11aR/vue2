@@ -46,10 +46,6 @@ table td, td {
   cursor: pointer;
 }
 
-.no-distribution {
-  text-align: center;
-}
-
 .distribution-text {
   text-decoration: underline;
 }
