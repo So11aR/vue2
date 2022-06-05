@@ -22,8 +22,14 @@ export default {
           throw new NotFoundException("Bad response from server");
         })
         .then(response => {
-          context.commit("setProduct", response);
-          return response;
+          const bases = response
+              .map(url => fetch(`https://update.wizardsoft.ru${url.links.bases}`).then(r => r.json()));
+
+          return Promise.all(bases).then((data) => {
+            const notEmpty = response.filter((el, index) => data[index].length > 0);
+            context.commit("setProduct", notEmpty);
+            return notEmpty;
+          });
         })
         .catch(reason => {
           if (reason instanceof NotFoundException) {
