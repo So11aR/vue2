@@ -1,5 +1,5 @@
 <template>
-  
+
   <div >
     <div id="app-table-main" class="tables-show">
       <div class="baseTableLimit__select" @click.stop>
@@ -81,8 +81,8 @@
             <td>
               {{ data.region }}
             </td>
-            <td>{{ data.updatedate | date("datetime") }}</td>
             <td>{{ data.updated_at | date("datetime") }}</td>
+            <td>{{ data.updatedate | date("datetime") }}</td>
             <td>{{ data.size }}</td>
           </tr>
         </tbody>
