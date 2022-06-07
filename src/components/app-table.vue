@@ -1,5 +1,5 @@
 <template>
-  
+
   <div >
     <div id="app-table-main" class="tables-show">
       <div class="baseTableLimit__select" @click.stop>
@@ -81,8 +81,8 @@
             <td>
               {{ data.region }}
             </td>
-            <td>{{ data.updatedate | date("datetime") }}</td>
             <td>{{ data.updated_at | date("datetime") }}</td>
+            <td>{{ data.updatedate | date("datetime") }}</td>
             <td>{{ data.size }}</td>
           </tr>
         </tbody>
@@ -163,7 +163,10 @@ export default {
 
       sortUpdatedAt: false,
       sortUpdateDate: false,
-      sortRegion: false
+      sortRegion: false,
+
+      sortingKey: null,
+      sortingDirection: 'ASC',
     };
   },
   props: [
@@ -199,48 +202,34 @@ export default {
           updatedate: new Date(item.updatedate).toJSON(),
         }));
     },
+    performSorting(flag) {
+        this.sortingDirection = flag ? 'ASC' : 'DESC';
+        this.clearPages();
+        this.splitPages();
+    },
     sortBases: function (e) {
       let sortedPage = null
-    
+
+      this.sortingKey = e.target.dataset.sort;
+
       switch (e.target.dataset.sort) {
         case 'updatedate':
           this.sortUpdateDate = !this.sortUpdateDate;
           this.sortRegion = false
           this.sortUpdatedAt = false
-          if (this.sortUpdateDate) {
-            sortedPage = this.sortedPages(utils.sortedByAsc)
-            this.$set(this.pages, this.offset, sortedPage);
-          } 
-          else {
-            sortedPage = this.sortedPages(utils.sortedByDesc)
-            this.$set(this.pages, this.offset, sortedPage);
-          }
+          this.performSorting(this.sortUpdateDate);
           break
         case 'updatedat':
           this.sortUpdatedAt = !this.sortUpdatedAt;
           this.sortRegion = false
           this.sortUpdateDate = false
-          if (this.sortUpdatedAt) {
-            sortedPage = this.sortedPages((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-            this.$set(this.pages, this.offset, sortedPage);
-          } 
-          else {
-        
-            sortedPage = this.sortedPages((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
-            this.$set(this.pages, this.offset, sortedPage);
-          }
+          this.performSorting(this.sortUpdatedAt);
           break
         case 'region':
           this.sortRegion = !this.sortRegion;
           this.sortUpdatedAt = false
           this.sortUpdateDate = false
-          if (this.sortRegion) {
-            sortedPage = this.sortedPages((a, b) => a.region.localeCompare(b.region))
-            this.$set(this.pages, this.offset, sortedPage);
-          } else {
-            sortedPage = this.sortedPages((a, b) => b.region.localeCompare(a.region))
-            this.$set(this.pages, this.offset, sortedPage);
-          }
+          this.performSorting(this.sortRegion);
           break
       }
     },
@@ -276,12 +265,40 @@ export default {
     },
     splitPages() {
       this.totalPages = Math.ceil(this.dataBases.length / this.limit)
+
+      const sorted = [...this.getDataBases];
+
+      switch (this.sortingKey) {
+          case 'updatedate':
+            if (this.sortingDirection === 'ASC') {
+                sorted.sort((a, b) => new Date(a.updatedate).getTime() - new Date(b.updatedate).getTime())
+            } else {
+                sorted.sort((a, b) => new Date(b.updatedate).getTime() - new Date(a.updatedate).getTime())
+            }
+          break;
+          case 'updatedat':
+              if (this.sortingDirection === 'ASC') {
+                  sorted.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
+              } else {
+                  sorted.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+              }
+              break;
+          case 'region':
+              if (this.sortingDirection === 'ASC') {
+                  sorted.sort((a, b) => a.region.localeCompare(b.region))
+              } else {
+                  sorted.sort((a, b) => b.region.localeCompare(a.region))
+              }
+              break;
+          default:
+              break;
+      }
      // console.log(Math.ceil(this.dataBases.length / this.limit))
       for (let i = 0; i < this.totalPages; i++) {
         const start = i * this.limit;
         const end = start + this.limit;
        // console.log(this.getDataBases.slice(start, end))
-        this.pages.push(this.getDataBases.slice(start, end));
+        this.pages.push(sorted.slice(start, end));
       }
     },
     selectAll(e) {
@@ -310,7 +327,7 @@ export default {
       console.log(error);
       console.log(this.errorFetchBases);
       this.$store.commit('setErrorGlobal', true)
-      
+
     }).finally(()=>{
       this.loading = false;
     })
