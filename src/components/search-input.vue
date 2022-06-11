@@ -5,7 +5,7 @@
       <input
         class="custom-select"
         v-model="searchString"
-        v-on:keydown.enter="$emit('search-input', searchString)"
+        v-on:keydown="$emit('search-input', searchString)"
       >
     </div>
   </div>
