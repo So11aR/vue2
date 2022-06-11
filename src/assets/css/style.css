@@ -63,6 +63,13 @@ table td, td {
   padding-top: 60px;
   padding-bottom: 40px;
 }
+.controls-holder {
+  display: flex;
+  gap: 40px;
+}
+.no-results {
+  padding: 10px;
+}
 #baseTableLimit {
   border: 1px solid #c9cccf;
   margin-top: 20px;

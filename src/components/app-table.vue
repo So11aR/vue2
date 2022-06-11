@@ -2,8 +2,9 @@
 
   <div >
     <div id="app-table-main" class="tables-show">
-      <div class="baseTableLimit__select" @click.stop>
+      <div class="baseTableLimit__select controls-holder" @click.stop>
         <selectCount @select-count="changeSelectCount" />
+        <searchInput @search-input="filterSearchResults"/>
       </div>
       <table id="mainTable">
         <thead @click="sortBases">
@@ -87,6 +88,7 @@
           </tr>
         </tbody>
       </table>
+      <p class="no-results" v-if="pages.length === 0">Ничего не найдено</p>
 
       <div class="but__wrapper">
         <div class="but-download__info">
@@ -137,6 +139,7 @@
 import { mapActions, mapGetters, mapState } from "vuex";
 import preloader from "@/components/preloader";
 import selectCount from "@/components/select-count";
+import searchInput from "@/components/search-input";
 import utils from "@/utils/utils";
 
 export default {
@@ -167,6 +170,8 @@ export default {
 
       sortingKey: null,
       sortingDirection: 'ASC',
+
+      searchStr: '',
     };
   },
   props: [
@@ -183,6 +188,7 @@ export default {
   components: {
     preloader,
     selectCount,
+    searchInput,
   },
   filters: {
     numberLimit: (value) => +value,
@@ -243,6 +249,11 @@ export default {
         this.checkboxAllEl.checked = false;
       }
     },
+    filterSearchResults(searchStr) {
+        this.searchStr = searchStr.trim().toLowerCase();
+        this.clearPages();
+        this.splitPages();
+    },
     next() {
       if (this.canNext) {
         if (this.selected) {
@@ -264,30 +275,29 @@ export default {
       this.offset = 0;
     },
     splitPages() {
-      this.totalPages = Math.ceil(this.dataBases.length / this.limit)
-
-      const sorted = [...this.getDataBases];
+      const filtered = this.getDataBases.filter(it => it.basename.toLowerCase().includes(this.searchStr));
+      this.totalPages = Math.ceil(filtered.length / this.limit);
 
       switch (this.sortingKey) {
           case 'updatedate':
             if (this.sortingDirection === 'ASC') {
-                sorted.sort((a, b) => new Date(a.updatedate).getTime() - new Date(b.updatedate).getTime())
+                filtered.sort((a, b) => new Date(a.updatedate).getTime() - new Date(b.updatedate).getTime())
             } else {
-                sorted.sort((a, b) => new Date(b.updatedate).getTime() - new Date(a.updatedate).getTime())
+                filtered.sort((a, b) => new Date(b.updatedate).getTime() - new Date(a.updatedate).getTime())
             }
           break;
           case 'updatedat':
               if (this.sortingDirection === 'ASC') {
-                  sorted.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
+                  filtered.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
               } else {
-                  sorted.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+                  filtered.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
               }
               break;
           case 'region':
               if (this.sortingDirection === 'ASC') {
-                  sorted.sort((a, b) => a.region.localeCompare(b.region))
+                  filtered.sort((a, b) => a.region.localeCompare(b.region))
               } else {
-                  sorted.sort((a, b) => b.region.localeCompare(a.region))
+                  filtered.sort((a, b) => b.region.localeCompare(a.region))
               }
               break;
           default:
@@ -298,7 +308,7 @@ export default {
         const start = i * this.limit;
         const end = start + this.limit;
        // console.log(this.getDataBases.slice(start, end))
-        this.pages.push(sorted.slice(start, end));
+        this.pages.push(filtered.slice(start, end));
       }
     },
     selectAll(e) {
