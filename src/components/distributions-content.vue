@@ -1,7 +1,6 @@
 <template>
   <div>
     <div
-        v-if="item.modules_licenses.length > 0"
         class="download_distribution distribution-text"
         @click="downloadLicences"
     >Загрузить лицензии</div>
@@ -23,11 +22,17 @@ export default {
   methods: {
     download(distributionId) {
       this.$emit('change-distribution', distributionId);
-      this.$emit('checkbox-all', this.item.modules_licenses.map(el => el.id));
+      this.$emit('checkbox-all', {
+          modules_licenses: this.item.modules_licenses.map(el => el.id),
+          product_license: this.item.product_license.id
+      });
       this.$emit('create-license-archive');
     },
     downloadLicences() {
-      this.$emit('checkbox-all', this.item.modules_licenses.map(el => el.id));
+      this.$emit('checkbox-all', {
+          modules_licenses: this.item.modules_licenses.map(el => el.id),
+          product_license: this.item.product_license.id
+      });
       this.download('not download');
     }
   },
