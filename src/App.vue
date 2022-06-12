@@ -30,7 +30,7 @@
 
 <template>
   <div id="app" v-if="ready">
-  
+
 
     <div v-if="errorGlobal">
       <span>Для указанного серийного номера отсутствуют данные SmetaWIZARD 5</span>
@@ -45,7 +45,7 @@
       :getArchives="getArchives"
     />
 
-    
+
 
 
     <tabControls @tab-active="tabActive" @tab-change="tabChange" />
@@ -89,12 +89,12 @@
     />
     </div>
 
-    
 
 
-    
 
-    
+
+
+
   </div>
 </template>
 
@@ -118,6 +118,7 @@ export default {
     tabLicenseIsActive: false,
     checkboxIds: [],
     selectedCheckbox: [],
+    productLicenseId: null,
     checkboxAllEl: "",
     taskCreated: false,
     distributionId: null,
@@ -147,12 +148,12 @@ export default {
       console.log(product)
       this.tabBaseIsActive = product.isActive
       this.tabLicenseIsActive = false
-      
+
       this.fetchDataBases(product.links.bases).then(()=>{
         // this.$refs.appTable.clearPages()
         // this.$refs.appTable.splitPages()
       })
-      
+
       //console.log(this.$refs.appTable)
       //this.$refs.appTable.clearPages()
       console.log("меняю таб")
@@ -194,11 +195,14 @@ export default {
           }
         });
         this.checkboxIds = [];
+        this.productLicenseId = null;
         this.selectedCheckbox = [];
       }
     },
     selectAllLicences(checkboxes) {
-      this.checkboxIds = checkboxes;
+      const {modules_licenses, product_license} = checkboxes;
+      this.checkboxIds = modules_licenses;
+      this.productLicenseId = product_license;
     },
     checkboxSelectAll(event, checkboxes) {
       this.checkboxAllEl = event.target;
@@ -255,6 +259,7 @@ export default {
       this.panel.status = false
       this.panel.current = false
       this.emptyTasks = false
+      this.productLicenseId = null
     },
     setDistributionId(distributionId) {
       this.distributionId = distributionId;
@@ -268,7 +273,7 @@ export default {
       linkEl.style.display = "none";
       linkEl.click();
       return false;
-      
+
     },
     async createTasks() {
       const archiveTasks = {
@@ -314,14 +319,15 @@ export default {
       this.panel.distSelected = false
       this.checkboxIds = [];
       this.selectedCheckbox = []
-      
+      this.productLicenseId = null
     },
     async createLicenseTask() {
       let licenseTask = {
         type_task: "product",
         data: {
           distribution: this.distributionId,
-          modules_licenses: this.checkboxIds
+          modules_licenses: this.checkboxIds,
+          product_license: this.productLicenseId,
         },
       };
 
@@ -331,14 +337,14 @@ export default {
           typeof this.distributionId === "number" &&
           licenseTask.data.modules_licenses.length
         ) {
-          await this.saveLicense(licenseTask);        
+          await this.saveLicense(licenseTask);
           const clearTimer = setInterval(() => {
             if (this.archive.progress === 100) {
               const lastLinkArchive = this.getLinks[this.getLinks.length - 1];
               this.downloadFile(lastLinkArchive, this.archive.archive_name);
               this.distributionId = null
               this.taskCreated = false
-              
+
               clearTimeout(clearTimer);
             }
           }, 1000);
@@ -359,20 +365,21 @@ export default {
               this.downloadFile(lastLinkArchive, this.archive.archive_name);
               this.distributionId = null
               this.taskCreated = false
-              
+
               clearTimeout(clearTimer);
             }
           }, 1000);
-         
+
         } else {
-          if ((isNaN(this.distributionId) || !this.distributionId) && this.checkboxIds.length) {
+          if ((isNaN(this.distributionId) || !this.distributionId) && (this.checkboxIds.length || this.productLicenseId)) {
             const modules = {
               modules_licenses: this.checkboxIds,
+              product_license: this.productLicenseId
             };
             licenseTask.data = modules;
             delete licenseTask.distribution;
-            await this.saveLicense(licenseTask);       
-      
+            await this.saveLicense(licenseTask);
+
             const clearTimer = setInterval(() => {
               if (this.archive.progress === 100) {
                 const lastLinkArchive = this.getLinks[this.getLinks.length - 1];
@@ -386,7 +393,7 @@ export default {
               }
             }, 1000);
             this.emptyTasks = false;
-            
+
             licenseTask = {}
           } else {
             this.emptyTasks = true
@@ -402,7 +409,7 @@ export default {
     },
   },
   mounted() {
-    
+
     this.applicationInit({
       code: encodeURIComponent(document.querySelector('#snb_update_options')?.dataset?.code || DEFAULT_CODE)
     }).then(()=> this.fetchArchives())
