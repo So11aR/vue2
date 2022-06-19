@@ -83,7 +83,7 @@
               {{ data.region }}
             </td>
             <td>{{ data.updated_at | date("datetime") }}</td>
-            <td>{{ data.updatedate | date("datetime") }}</td>
+            <td>{{ formatDate(data.updatedate) }}</td>
             <td>{{ data.size }}</td>
           </tr>
         </tbody>
@@ -207,6 +207,13 @@ export default {
           ...item,
           updatedate: new Date(item.updatedate).toJSON(),
         }));
+    },
+    formatDate(date) {
+        const dateObject = new Date(date);
+        const day = `${dateObject.getDate()}`.padStart(2, '0');
+        const month = `${dateObject.getMonth()}`.padStart(2, '0');
+        const year = dateObject.getFullYear();
+        return `${day}.${month}.${year}`;
     },
     performSorting(flag) {
         this.sortingDirection = flag ? 'ASC' : 'DESC';
