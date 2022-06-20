@@ -211,7 +211,7 @@ export default {
     formatDate(date) {
         const dateObject = new Date(date);
         const day = `${dateObject.getDate()}`.padStart(2, '0');
-        const month = `${dateObject.getMonth()}`.padStart(2, '0');
+        const month = `${dateObject.getMonth() + 1}`.padStart(2, '0');
         const year = dateObject.getFullYear();
         return `${day}.${month}.${year}`;
     },
